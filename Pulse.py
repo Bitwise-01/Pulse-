@@ -307,7 +307,8 @@ if __name__ == '__main__':
   attack=BruteForce(username,wordlist,url,_username,_password)
   attack.ai()
  except KeyboardInterrupt:
-  attack.alive=False
+  try:attack.alive=False
+  except:pass
+  exit('\n\n{1}Exiting {0}...{1}'.format(R,W))
  finally: 
   subprocess.Popen(['service','tor','stop']).wait()
-  exit('\n\n{1}Exiting {0}...{1}'.format(R,W))
