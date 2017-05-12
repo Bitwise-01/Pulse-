@@ -83,7 +83,7 @@ class Browser(object):
    if not 'lock' in self.br.geturl():
     return True
    else:
-    time.sleep(random.randint(1,4)*60)
+    self.refresh()
     engine.display()
     return False
 
