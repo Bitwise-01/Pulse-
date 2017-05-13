@@ -16,6 +16,7 @@ import mechanize
 import subprocess
 
 from Core import conf
+from platform import platform
 from Core.conf import userAgent
 
 class Browser(object):
@@ -212,6 +213,10 @@ if __name__ == '__main__':
  # Root access only
  if os.getuid():
   exit('root access required')
+
+ # Kali linux Only
+ if not 'kali' in platform():
+  exit('Kali linux required') 
 
  # Links
  instagram = 'https://www.instagram.com/accounts/login/?force_classic_login'
