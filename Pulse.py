@@ -242,7 +242,7 @@ if __name__ == '__main__':
   color=R if locked else G
 
   print ''
-  print '  {}[-] Website:  {}{}'.format(W,G,website)
+  print '  {}[-] Web-Site: {}{}'.format(W,G,website)
   print '  {}[-] Proxy Ip: {}{}'.format(W,G,proxyIp)
   print '  {}[-] Wordlist: {}{}'.format(W,G,wordlist)
   print '  {}[-] Username: {}{}'.format(W,G,username)
