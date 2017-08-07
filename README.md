@@ -4,4 +4,4 @@
 <br>
 
 # Usage
-**python Pulse.py Instagram username103 pass.lst**
+**python pulse.py Instagram username103 pass.lst**
