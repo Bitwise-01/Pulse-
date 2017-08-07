@@ -79,7 +79,7 @@ class Bruter(TorManager,Browser):
      format(self.siteName,self.username,msg))
 
    if all([not self.isFound, msg]):
-    print '  [-] {}'.format(msg)
+    print '\n  [-] {}'.format(msg)
 
    self.alive = False
    self.stopTor()
