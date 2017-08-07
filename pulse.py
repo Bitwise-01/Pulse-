@@ -173,7 +173,7 @@ class Bruter(TorManager,Browser):
   print '\n  {}[-] Web-Site: {}{}'.format(self.n,self.b,self.siteName)
   print '  {}[-] Proxy Ip: {}{}'.format(self.n,self.b,ip)
   print '  {}[-] Wordlist: {}{}'.format(self.n,self.b,self.wordlist)
-  print '  {}[-] Username: {}{}'.format(self.n,creds,self.username)
+  print '  {}[-] Username: {}{}'.format(self.n,creds,self.username.title())
   print '  {}[-] Password: {}{}'.format(self.n,creds,pwd)
   print '  {}[-] Attempts: {}{}'.format(self.n,self.b,attempts)
 
