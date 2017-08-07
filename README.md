@@ -1,7 +1,5 @@
 # Pulse
 
-<br>
-
 # Usage
 python pulse.py [site] [username] [wordlist]
 
