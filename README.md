@@ -1,3 +1,7 @@
-**Pulse**
+# Pulse
 
-This program can attempt unlimited amount of passwords on both Instagram & Twitter, without getting locked
+<br>
+<br>
+
+# Usage
+**python Pulse.py Instagram username103 pass.lst**
