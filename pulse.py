@@ -96,6 +96,9 @@ class Bruter(TorManager,Browser):
  def manageIps(self,rec=2):
   ip = self.getIp()
   if ip:
+   if ip in self.recentIps:
+    self.updateIp()
+    self.manageIps()
    self.ip = ip
    self.recentIps.append(ip)
   else:
