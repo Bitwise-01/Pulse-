@@ -4,9 +4,6 @@ import requests
 import cookielib
 import mechanize
 
-# obtain ip address
-url = 'https://api.ipify.org/?format=json'
-
 class Browser(object):
  def __init__(self):
   self.br = None
@@ -27,9 +24,26 @@ class Browser(object):
 
  def getIp(self):
   try:
-   return json.loads(requests.get(url).text)['ip']
+   return json.loads(requests.get('https://api.ipify.org/?format=json').text)['ip']
   except KeyboardInterrupt:self.kill()
   except:pass
+
+ def exists(self, name):
+  try:
+   link = 'https://{}.com/{}'.format(self.siteName, name)
+   html = requests.get(link).text
+
+   if self.siteName == 'Instagram':
+    return True if '@{}'.format(name.lower()) in html else False
+
+   elif self.siteName == 'Twitter':
+    return False if 'errorpage' in html else True
+   
+   else:
+    return False if 'Page Not Found' in html else True
+
+  except KeyboardInterrupt:self.kill()
+  except:return
 
  def login(self,password):
   if any([not self.alive,self.isFound]):
