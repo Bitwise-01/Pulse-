@@ -71,7 +71,7 @@ class Bruter(TorManager,Browser):
   try:
    if self.isFound:
     self.display(msg)
-    print '  [-] Password Found'
+    print ' [-] Password Found'
 
     with open('Cracked.txt','a') as f:
      f.write('[-] Site: {}\n[-] Username: {}\n[-] Password: {}\n\n'.\
